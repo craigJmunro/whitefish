@@ -57,7 +57,7 @@ def discounted_value(amount, discount_rate, month):
 def compute_irr(initial_investment, monthly_net_cfs):
     cash_flows = [-initial_investment] + monthly_net_cfs
     irr_monthly = npf.irr(cash_flows)
-    if irr_monthly is None:
+    if irr_monthly is None or np.isnan(irr_monthly):
         return None
     irr_annual = (1+irr_monthly)**12 - 1
     return irr_annual
@@ -268,7 +268,10 @@ def main():
 
         # Display key metrics:
         st.write(f"**NPV (Single Scenario):** ${detail['NPV']:,.2f}")
-        st.write(f"**Average Annual IRR:** {compute_irr(effective_investment, [m['Net CF'] for m in detail['monthly_data']])*100:.1f}%")
+        if detail["IRR"] is not None:
+            st.write(f"**Average Annual IRR:** {detail['IRR']*100:.1f}%")
+        else:
+            st.write("**Average Annual IRR:** Not computable")
         if detail["payback_month"]:
             payback_date = dates[int(detail["payback_month"]) - 1].strftime("%B-%y")
         else:
@@ -335,3 +338,4 @@ def main():
         st.dataframe(summary_yearly[["Year", "Stake Cash Received", "Stake Valuation (Multiplier)", "Total Stake Value"]])
 
 if __name__ == "__main__":
+    main()
